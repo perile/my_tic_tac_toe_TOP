@@ -123,8 +123,12 @@ function gameMaster(){
 */
 
 /*GLOBAL VARIABLES */
+const buttons = document.querySelectorAll("button");
+const h1 = document.querySelector("h1");
+let players = [];
+let decideWhoPlaysFirst = 0;
 
-const button = document.querySelectorAll("button");
+/*GLOBAL VARIABLES */
 
 
 function gameBoard() {
@@ -172,7 +176,7 @@ function gameBoard() {
             }
             console.log("INVALID MOVE, TRY AGAIN!")
         }*/
-        
+        console.log(arr);
         let rowID = button.dataset.row;
         let columnID = button.dataset.column;
         arr[rowID][columnID] = player.returnMarker();
@@ -189,6 +193,7 @@ function gameBoard() {
 function player(){
     const name = String(prompt("What is your name?"));
     const marker = String(prompt("What is your marker?"));
+    //const turns = turn;
 
     const sayHi = function(){
         return `Hi! My name is ${name}`;
@@ -196,86 +201,128 @@ function player(){
     const returnMarker = function(){
         return marker;
     };
+    //const returnTurn = () => turns;
 
-    return {name, returnMarker};
+    return {name, returnMarker, /*returnTurn*/};
 };
 
 
-(function() {
+function initializer() {
+    // const buttons = document.querySelectorAll("button");
+    // const h1 = document.querySelector("h1");
+    //buttonEvents(buttons);
 
-    const player1 = player();
-    const player2 = player();
+    decideWhoPlaysFirst = Math.floor(Math.random() * 2);
+    // let whooseTurn = 0;
+    // let players = [];
+    if(decideWhoPlaysFirst == 0){
+        const player1 = player();
+        const player2 = player();
+        players.push(player1, player2);
+        h1.textContent = `${player1.name}, it's your turn.`;
+    }else{
+        const player1 = player();
+        const player2 = player();
+        players.push(player2, player1);
+        h1.textContent = `${player2.name}, it's your turn.`;
+        
+    }
+    decideWhoPlaysFirst = 0;
     const game = gameBoard();
 
-    let decideWhoPlaysFirst = Math.floor(Math.random() * 2);
+    function buttonEvents(){
+        let rowID = 0;
+        let columnID = 0;
 
-    let flow = true
-    // let row;
-    // let column;
-    while(flow == true){
-        game.showGameBoard();
-        if(decideWhoPlaysFirst == 0){
+        buttons.forEach((elem) => {
+            if(columnID < 3){
+                elem.dataset.row = rowID;
+                elem.dataset.column = columnID;
+                columnID++;
+            }else{
+                rowID++;
+                columnID = 0;
+                elem.dataset.row = rowID;
+                elem.dataset.column = columnID;
+                columnID++;
+            }
+            elem.addEventListener("click", () => {
+                if(elem.textContent == ""){
+                    if(decideWhoPlaysFirst == 0){
+                        elem.textContent = players[0].returnMarker();
+                        let x = game.checkIfMoveLegal(players[0], elem);
+                        if(x == true){
+                            h1.textContent = `GAME OVER! ${players[0].name} has won the game!`;
+                        }else{
+                            h1.textContent = `${players[1].name}, it's your turn`;
+                            decideWhoPlaysFirst++;
+                            elem.disabled = true;
+                        }
+                    }else{
+                        elem.textContent = players[1].returnMarker();
+                        let x = game.checkIfMoveLegal(players[1], elem);
+                        if(x == true){
+                            h1.textContent = `GAME OVER! ${players[1].name} has won the game!`;
+                        }else{
+                            h1.textContent = `${players[0].name}, it's your turn`;
+                            decideWhoPlaysFirst--;
+                            elem.disabled = true;
+                        }
+                    }
+                }
+            })
 
-            //player1 turn 
-            console.log(`${player1.name}, it's your turn`);
-            //let row = prompt("From 1 to 3, what row will you choose?");
-            //let column = prompt("From 1 to 3, what column will you choose?");
-            flow = game.checkIfMoveLegal(player1) == true ? false : true;
-            if(flow == false) {break;}
-
-            //player2 turn
-            game.showGameBoard();
-            console.log(`${player2.name}, it's your turn`);
-            // row = prompt("From 1 to 3, what row will you choose?");
-            // column = prompt("From 1 to 3, what column will you choose?");
-            flow = game.checkIfMoveLegal(player2) == true ? false : true;
-            if(flow == false) {break;}
-
-        }else{
-
-            //player2 turn
-            console.log(`${player2.name}, it's your turn`);
-            // let row = prompt("From 1 to 3, what row will you choose?");
-            // let column = prompt("From 1 to 3, what column will you choose?");
-            flow = game.checkIfMoveLegal(player2) == true ? false : true;
-            if(flow == false) {break;}
-
-            //player1 turn
-            game.showGameBoard();
-            console.log(`${player1.name}, it's your turn`);
-            // row = prompt("From 1 to 3, what row will you choose?");
-            // column = prompt("From 1 to 3, what column will you choose?");
-            flow = game.checkIfMoveLegal(player1) == true ? false : true;
-            if(flow == false) {break;}
-
-        }
+        })
     }
+    buttonEvents();
 
-    console.log("The game is over!!")
+}
 
-})()
-
-
-function buttonEvents(player){
-    // const adderAndRemover = () => {
-    //     this.textContent = player.returnMarker();
-    //     // this.removeEventListener("click")
-        
-    // }
+/*
+function buttonEvents(player1, player2, buttons, turn){
     let rowID = 0;
     let columnID = 0;
-    button.forEach((elem) => {
+
+    buttons.forEach((elem) => {
         elem.dataset.row = rowID++;
         elem.dataset.column = columnID++;
         elem.addEventListener("click", () =>{
-            elem.textContent = player.returnMarker();
+            if(turn == 0){
+                if(player1.returnTurn == 0){
+                    elem.textContent = player1.returnMarker();
+                    
+                    h1.textContent = `${player2.name}, it's your turn`;
+                }else{
+                    elem.textContent = player2.returnMarker();
+                    h1.textContent = `${player1.name}, it's your turn`;
+                }
+            }else{
+                if(player1.returnTurn == 1){
+                    elem.textContent = player1.returnMarker();
+                    h1.textContent = `${player2.name}, it's your turn`;
+                }else{
+                    elem.textContent = player2.returnMarker();
+                    h1.textContent = `${player1.name}, it's your turn`;
+                }
+            }
+            
+            
             elem.disabled = true;
+            
+            /*if(turn == 0){
+                
+                turn++;
+            }else{
+                h1.textContent = `${player1.name}, it's your turn`;
+                turn--
+            }
+
         })
     })
-}
+}*/
 
 
-
+initializer();
 
 /*TESTS*/
 
